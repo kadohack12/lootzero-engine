@@ -1,12 +1,15 @@
 import json
 import os
 from datetime import datetime
+from html import escape
 from pathlib import Path
 
 import requests
 
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
 MAKE_WEBHOOK_URL = os.getenv("MAKE_WEBHOOK_URL", "").strip()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "@KadoTech_IA_Cyber").strip()
 CACHE_FILE = Path("claimed_games.json")
 TIMEOUT = 15
 
@@ -79,6 +82,42 @@ def send_make_alert(
         print(f"Erreur envoi Make: {e}")
 
 
+def send_telegram_alert(
+    title: str,
+    store: str,
+    original_price: str,
+    url: str,
+    end_date: str | None = None,
+) -> None:
+    """Send a plain-text alert directly through the Telegram Bot API."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+
+    expires = end_date or "Non précisée"
+    message = (
+        f"🎁 <b>{escape(title)}</b>\n\n"
+        f"<b>Boutique :</b> {escape(store)}\n"
+        f"<b>Prix d'origine :</b> <s>{escape(original_price)}</s>\n"
+        f"<b>Lien :</b> <a href=\"{escape(url, quote=True)}\">Récupérer le jeu</a>\n"
+        f"<b>Fin de l'offre :</b> {escape(expires)}"
+    )
+    endpoint = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    try:
+        response = session.post(
+            endpoint,
+            data={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": False,
+            },
+            timeout=TIMEOUT,
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Erreur envoi Telegram: {e}")
+
+
 def send_alert(
     title: str,
     store: str,
@@ -90,6 +129,7 @@ def send_alert(
 ) -> None:
     print(f"🔥 [NOUVEAU JEU GRATUIT] {store}: {title} (Était à {original_price})")
     send_make_alert(title, store, original_price, url, end_date, game_id, image_url)
+    send_telegram_alert(title, store, original_price, url, end_date)
     if not WEBHOOK_URL:
         return
 
