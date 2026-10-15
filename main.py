@@ -6,6 +6,7 @@ from pathlib import Path
 import requests
 
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+MAKE_WEBHOOK_URL = os.getenv("MAKE_WEBHOOK_URL", "").strip()
 CACHE_FILE = Path("claimed_games.json")
 TIMEOUT = 15
 
@@ -43,8 +44,52 @@ def format_discord_countdown(end_date: str | None) -> str | None:
         return end_date
 
 
-def send_alert(title: str, store: str, original_price: str, url: str, end_date: str | None = None) -> None:
+def send_make_alert(
+    title: str,
+    store: str,
+    original_price: str,
+    url: str,
+    end_date: str | None = None,
+    game_id: str | None = None,
+    image_url: str | None = None,
+) -> None:
+    """Send a normalized new-deal payload to Make for multi-platform routing."""
+    if not MAKE_WEBHOOK_URL:
+        return
+
+    payload = {
+        "game_id": game_id,
+        "title": title,
+        "store": store,
+        "original_price": original_price,
+        "url": url,
+        "expires_at": end_date,
+        "image_url": image_url,
+        "message": (
+            f"🎁 {title}\n"
+            f"Boutique : {store}\n"
+            f"Prix d'origine : {original_price}\n"
+            f"Lien : {url}\n"
+            f"Fin de l'offre : {end_date or 'Non précisée'}"
+        ),
+    }
+    try:
+        session.post(MAKE_WEBHOOK_URL, json=payload, timeout=TIMEOUT).raise_for_status()
+    except requests.RequestException as e:
+        print(f"Erreur envoi Make: {e}")
+
+
+def send_alert(
+    title: str,
+    store: str,
+    original_price: str,
+    url: str,
+    end_date: str | None = None,
+    game_id: str | None = None,
+    image_url: str | None = None,
+) -> None:
     print(f"🔥 [NOUVEAU JEU GRATUIT] {store}: {title} (Était à {original_price})")
+    send_make_alert(title, store, original_price, url, end_date, game_id, image_url)
     if not WEBHOOK_URL:
         return
 
@@ -69,8 +114,6 @@ def send_alert(title: str, store: str, original_price: str, url: str, end_date: 
         session.post(WEBHOOK_URL, json=payload, timeout=TIMEOUT).raise_for_status()
     except requests.RequestException as e:
         print(f"Erreur envoi Discord: {e}")
-
-
 def fetch_json(url: str):
     res = session.get(url, timeout=TIMEOUT)
     res.raise_for_status()
@@ -116,6 +159,8 @@ def check_epic(cache: set[str]) -> None:
             f"{orig / 100:.2f} €",
             url,
             offers[0].get("endDate"),
+            game_id,
+            next((image.get("url") for image in item.get("keyImages", []) if image.get("url")), None),
         )
         cache.add(game_id)
 
@@ -140,7 +185,14 @@ def check_steam(cache: set[str]) -> None:
 
         url = (f"https://store.steampowered.com/app/{app_id}/" if app_id
                else f"https://www.cheapshark.com/redirect?dealID={deal_id}")
-        send_alert(deal.get("title", "Sans titre"), "Steam", f"{retail:.2f} $", url)
+        send_alert(
+            deal.get("title", "Sans titre"),
+            "Steam",
+            f"{retail:.2f} $",
+            url,
+            game_id=game_id,
+            image_url=deal.get("thumb"),
+        )
         cache.add(game_id)
 
 
@@ -169,7 +221,14 @@ def check_reddit(cache: set[str]) -> None:
         if post_id in cache:
             continue
 
-        send_alert(title, f"{store} (Alerte Reddit)", "Gratuit temporaire", data.get("url"))
+        send_alert(
+            title,
+            f"{store} (Alerte Reddit)",
+            "Gratuit temporaire",
+            data.get("url"),
+            game_id=post_id,
+            image_url=data.get("thumbnail") if data.get("thumbnail", "").startswith("http") else None,
+        )
         cache.add(post_id)
 
 

@@ -33,6 +33,7 @@ jobs:
       - name: Run LootZero
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
         run: python main.py
 
       - name: Commit and push cache when changed
