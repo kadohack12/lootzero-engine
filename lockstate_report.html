@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LockState — Rapport d'audit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f6fa; padding: 40px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header { background: #2c3e50; color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+        .header h1 { font-size: 28px; }
+        .header p { opacity: 0.8; margin-top: 5px; }
+        
+        .score-section { background: white; padding: 30px; text-align: center; }
+        .score-circle {
+            width: 150px; height: 150px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 20px auto; font-size: 48px; font-weight: bold;
+            color: white;
+        }
+        .score-critical { background: #e74c3c; }
+        .score-high { background: #e67e22; }
+        .score-medium { background: #f39c12; }
+        .score-low { background: #27ae60; }
+        
+        .alerts { background: white; padding: 30px; }
+        .alerts h2 { margin-bottom: 15px; }
+        .alert { padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 5px solid; }
+        .alert-critical { background: #fdf0ef; border-color: #e74c3c; }
+        .alert-high { background: #fef5e7; border-color: #e67e22; }
+        .alert-medium { background: #fef9e7; border-color: #f39c12; }
+        .alert-low { background: #eafaf1; border-color: #27ae60; }
+        .alert-message { font-weight: 600; }
+        
+        .breakdown { background: white; padding: 30px; }
+        .breakdown h2 { margin-bottom: 15px; }
+        .breakdown table { width: 100%; border-collapse: collapse; }
+        .breakdown th { background: #ecf0f1; padding: 12px; text-align: left; }
+        .breakdown td { padding: 12px; border-bottom: 1px solid #ecf0f1; }
+        .bar { height: 20px; background: #ecf0f1; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s; }
+        .bar-green { background: #27ae60; }
+        .bar-orange { background: #e67e22; }
+        .bar-red { background: #e74c3c; }
+        
+        .system-info { background: white; padding: 30px; border-radius: 0 0 10px 10px; }
+        .system-info h2 { margin-bottom: 15px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .info-label { font-weight: 600; color: #7f8c8d; }
+        
+        .footer { text-align: center; padding: 20px; color: #95a5a6; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 LockState — Rapport d'audit</h1>
+            <p>runtime-ytlzoixegyvwfdjc-c8fbdc8ff-qrkqm · Debian GNU/Linux 13 (trixie) · 2026-10-31 17:09</p>
+        </div>
+
+        <div class="score-section">
+            <h2>Score de risque global</h2>
+            <div class="score-circle score-high">50/100</div>
+            <p>Risque Élevé</p>
+        </div>
+
+        
+        <div class="alerts">
+            <h2>Alertes détectées</h2>
+            
+            <div class="alert alert-critical">
+                <div class="alert-message">Aucun chiffrement disque actif — données exposées en cas de vol physique</div>
+            </div>
+            
+            <div class="alert alert-critical">
+                <div class="alert-message">Pare-feu désactivé — aucune protection réseau</div>
+            </div>
+            
+        </div>
+        
+
+        <div class="breakdown">
+            <h2>Détail par catégorie</h2>
+            <table>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Score</th>
+                    <th>Barre</th>
+                    <th>Poids</th>
+                </tr>
+                
+                <tr>
+                    <td>Chiffrement</td>
+                    <td>0/100</td>
+                    <td>
+                        <div class="bar">
+                            <div class="bar-fill bar-red" 
+                                 style="width: 0%"></div>
+                        </div>
+                    </td>
+                    <td>25%</td>
+                </tr>
+                
+                <tr>
+                    <td>Mises à jour</td>
+                    <td>100/100</td>
+                    <td>
+                        <div class="bar">
+                            <div class="bar-fill bar-green" 
+                                 style="width: 100%"></div>
+                        </div>
+                    </td>
+                    <td>20%</td>
+                </tr>
+                
+                <tr>
+                    <td>Services exposés</td>
+                    <td>100/100</td>
+                    <td>
+                        <div class="bar">
+                            <div class="bar-fill bar-green" 
+                                 style="width: 100%"></div>
+                        </div>
+                    </td>
+                    <td>15%</td>
+                </tr>
+                
+                <tr>
+                    <td>Pare-feu</td>
+                    <td>0/100</td>
+                    <td>
+                        <div class="bar">
+                            <div class="bar-fill bar-red" 
+                                 style="width: 0%"></div>
+                        </div>
+                    </td>
+                    <td>10%</td>
+                </tr>
+                
+            </table>
+        </div>
+
+        <div class="system-info">
+            <h2>Informations système</h2>
+            <div class="info-grid">
+                <div><span class="info-label">Hôte</span><br>runtime-ytlzoixegyvwfdjc-c8fbdc8ff-qrkqm</div>
+                <div><span class="info-label">OS</span><br>Debian GNU/Linux 13 (trixie)</div>
+                <div><span class="info-label">Uptime</span><br>38m9s</div>
+                <div><span class="info-label">Pare-feu</span><br>Désactivé</div>
+                <div><span class="info-label">Chiffrement</span><br>Désactivé</div>
+                <div><span class="info-label">Utilisateurs</span><br>3</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Généré par LockState · Outil d'audit de sécurité · Données non persistées
+        </div>
+    </div>
+</body>
+</html>

@@ -18,8 +18,10 @@ CHEAPSHARK_URL = "https://www.cheapshark.com/api/1.0/deals?storeID=1&upperPrice=
 REDDIT_URL = "https://www.reddit.com/r/FreeGameFindings/new.json?limit=10"
 
 session = requests.Session()
-# Remplace TON_PSEUDO_REDDIT par ton pseudo Reddit
-session.headers.update({"User-Agent": "linux:lootzero.gamealert:v1.0 (by /u/TON_PSEUDO_REDDIT)"})
+# Reddit exige un User-Agent descriptif et unique, sinon il répond 403.
+# Renseignez votre pseudo via la variable d'environnement REDDIT_USERNAME.
+_reddit_user = os.getenv("REDDIT_USERNAME", "kadohack12").strip() or "kadohack12"
+session.headers.update({"User-Agent": f"linux:lootzero.gamealert:v1.0 (by /u/{_reddit_user})"})
 
 
 def load_cache() -> set[str]:
